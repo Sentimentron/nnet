@@ -67,6 +67,34 @@ func DTanh(x float64) float64 {
 	return 1.0 - math.Pow(x, 2)
 }
 
+func Linear(x float64) float64 {
+	return x
+}
+
+func DLinear(x float64) float64 {
+	return 1.0
+}
+
+func HardTanh(x float64) float64 {
+	if x < -1.0 {
+		return -1.0
+	} else if x > 1.0 {
+		return 1.0
+	} else {
+		return x
+	}
+}
+
+func DHardTanh(x float64) float64 {
+	if x < -1.0 {
+		return 0.0
+	} else if x > 1.0 {
+		return 0.0
+	} else {
+		return 1.0
+	}
+}
+
 func MakeMatrix(rows, cols int) [][]float64 {
 	matrix := make([][]float64, rows)
 	for i := range matrix {

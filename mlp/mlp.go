@@ -35,6 +35,12 @@ func (d *MLP) AddLayer(numInputUnits, numHiddenUnits int) {
 	d.NumLayers++
 }
 
+// ConnectLayer adds a new MLP layer
+func (d *MLP) ConnectLayer(l *HiddenLayer) {
+	d.HiddenLayers = append(d.HiddenLayers, l)
+	d.NumLayers++
+}
+
 // Load loads MLP from a dump file and return its instatnce.
 func Load(filename string) (*MLP, error) {
 	file, err := os.Open(filename)
