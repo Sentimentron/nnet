@@ -5,20 +5,26 @@ import (
 	"math/rand"
 )
 
+type LayerFunc func(float64) float64
+
 type HiddenLayer struct {
 	W              [][]float64
 	B              []float64
 	NumInputUnits  int
 	NumHiddenUnits int
+	f              LayerFunc // Forward-prop function
+	d              LayerFunc // Gradient function
 }
 
-func NewHiddenLayer(numInputUnits, numHiddenUnits int) *HiddenLayer {
+func NewHiddenLayer(numInputUnits, numHiddenUnits int, f LayerFunc, d LayerFunc) *HiddenLayer {
 	h := new(HiddenLayer)
 	h.W = nnet.MakeMatrix(numInputUnits, numHiddenUnits)
 	h.NumInputUnits = numInputUnits
 	h.NumHiddenUnits = numHiddenUnits
 	h.B = make([]float64, numHiddenUnits)
 	h.Init()
+	h.f = f
+	h.d = d
 	return h
 }
 
@@ -37,13 +43,22 @@ func (h *HiddenLayer) Init() {
 
 // Forward prop
 func (h *HiddenLayer) Forward(input []float64) []float64 {
-	return nnet.Forward(input, h.W, h.B)
+	numOutputUnits := len(h.B)
+	predicted := make([]float64, numOutputUnits)
+	for i := range predicted {
+		sum := 0.0
+		for j := range input {
+			sum += h.W[j][i] * input[j]
+		}
+		predicted[i] = h.f(sum + h.B[i])
+	}
+	return predicted
 }
 
 func (h *HiddenLayer) ForwardBatch(input [][]float64) [][]float64 {
 	predicted := make([][]float64, len(input))
 	for i := range input {
-		predicted[i] = nnet.Forward(input[i], h.W, h.B)
+		predicted[i] = h.Forward(input[i])
 	}
 	return predicted
 }
@@ -71,7 +86,7 @@ func (h *HiddenLayer) AccumulateDeltaBatch(deltas [][]float64) [][]float64 {
 func (h *HiddenLayer) BackwardWithTarget(predicted, target []float64) []float64 {
 	delta := make([]float64, h.NumHiddenUnits)
 	for i := 0; i < h.NumHiddenUnits; i++ {
-		delta[i] = (predicted[i] - target[i]) * nnet.DSigmoid(predicted[i])
+		delta[i] = (predicted[i] - target[i]) * h.d(predicted[i])
 	}
 	return delta
 }
@@ -79,7 +94,7 @@ func (h *HiddenLayer) BackwardWithTarget(predicted, target []float64) []float64 
 func (h *HiddenLayer) Backward(predicted, accumulateDelta []float64) []float64 {
 	delta := make([]float64, h.NumHiddenUnits)
 	for i := 0; i < h.NumHiddenUnits; i++ {
-		delta[i] = accumulateDelta[i] * nnet.DSigmoid(predicted[i])
+		delta[i] = accumulateDelta[i] * h.d(predicted[i])
 	}
 	return delta
 }

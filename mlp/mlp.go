@@ -30,7 +30,7 @@ func NewMLP() *MLP {
 
 // AddLayer adds a new hidden layer.
 func (d *MLP) AddLayer(numInputUnits, numHiddenUnits int) {
-	layer := NewHiddenLayer(numInputUnits, numHiddenUnits)
+	layer := NewHiddenLayer(numInputUnits, numHiddenUnits, nnet.Sigmoid, nnet.DSigmoid)
 	d.HiddenLayers = append(d.HiddenLayers, layer)
 	d.NumLayers++
 }
